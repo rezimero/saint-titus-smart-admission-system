@@ -1,6 +1,9 @@
-STSAMS Identity Module foundation.
-Future components:
-- Authentication
-- User identity
-- Authorization
-- Superadmin controls
+# Identity Module
+
+Responsibilities:
+- Authentication flows
+- User identity operations
+- Role assignment foundation
+- Profile management
+
+The module follows SRP principles.
