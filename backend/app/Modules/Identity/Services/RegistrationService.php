@@ -1,18 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\Identity\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
-class RegistrationService
+final class RegistrationService
 {
-    public function register(array $data): User
+    /** Public registration never accepts a client-selected role. */
+    public function register(array $validated): User
     {
-        return User::create([
-            'name'=>$data['name'],
-            'email'=>$data['email'],
-            'password'=>Hash::make($data['password']),
-        ]);
+        return DB::transaction(function () use ($validated): User {
+            // Resolve first: misconfigured authorization must not create orphan users.
+            $role = Role::findByName('applicant', 'web');
+
+            $user = User::query()->create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            $user->assignRole($role);
+
+            return $user;
+        });
     }
 }

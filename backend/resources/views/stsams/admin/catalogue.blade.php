@@ -1,0 +1,10 @@
+@extends('stsams.layout')
+@section('title', 'Admissions configuration')
+@section('content')
+<div class="page-head"><div><span class="eyebrow">SYSTEM CONFIGURATION</span><h1>Admission setup</h1><p>Configure the academic catalogue and controlled admission windows.</p></div></div>
+<div class="two-column"><section class="card"><h2>Create programme</h2><form method="POST" action="{{ route('stsams.admin.programme') }}">@csrf
+<label>Programme code<input name="code" maxlength="32" placeholder="E.g. NURSING" required></label><label>Programme name<input name="name" maxlength="160" required></label><label>Description<textarea name="description" rows="3"></textarea></label><button class="button primary" type="submit">Add programme</button></form></section>
+<section class="card"><h2>Create admission session</h2><form method="POST" action="{{ route('stsams.admin.session') }}">@csrf<label>Session name<input name="name" placeholder="E.g. 2027/2028" maxlength="80" required></label><label>Opening date <small>(optional)</small><input type="date" name="opens_on"></label><label>Closing date <small>(optional)</small><input type="date" name="closes_on"></label><button class="button primary" type="submit">Create session</button></form></section></div>
+<section class="section"><h2>Configured programmes</h2><div class="card">@forelse($programmes as $programme)<div class="file-row"><span>{{ $programme->name }} <small>· {{ $programme->code }}</small></span><span class="pill">{{ $programme->is_active ? 'Active' : 'Inactive' }}</span></div>@empty<p>No programmes yet.</p>@endforelse</div></section>
+<section class="section"><h2>Admission sessions</h2><div class="card">@forelse($sessions as $session)<div class="file-row"><span><strong>{{ $session->name }}</strong> <small>{{ $session->is_open ? 'Open' : 'Closed' }}</small></span><form method="POST" action="{{ route($session->is_open ? 'stsams.admin.session.close' : 'stsams.admin.session.open', $session) }}">@csrf<button type="submit" class="button light">{{ $session->is_open ? 'Close session' : 'Open session' }}</button></form></div>@empty<p>No admission sessions yet.</p>@endforelse</div></section>
+@endsection
