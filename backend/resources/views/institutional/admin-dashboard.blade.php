@@ -10,7 +10,7 @@
  <details class="editor-details"><summary>{{ ucfirst($section) }} <span>{{ count($topics) }} fields</span></summary>
    @foreach($topics as $key => $label)
     <form action="{{ route('institution.admin.content') }}" method="POST" class="editor-form">@csrf
-      <input type="hidden" name="section" value="{{ $section }}"><input type="hidden" name="content_key" value="{{ $key }}"><label for="field-{{ $section }}-{{ $key }}">{{ $label }}</label><textarea id="field-{{ $section }}-{{ $key }}" name="body" rows="4" maxlength="40000" placeholder="Add approved {{ strtolower($label) }} information here...">{{ $content->get($section.'.'.$key)?->pending_by !== null ? $content->get($section.'.'.$key)?->pending_body : $content->get($section.'.'.$key)?->body }}</textarea><button class="btn btn-primary btn-small" type="submit">Save draft</button>
+      <input type="hidden" name="section" value="{{ $section }}"><input type="hidden" name="content_key" value="{{ $key }}"><label for="field-{{ $section }}-{{ $key }}">{{ $label }}</label><textarea id="field-{{ $section }}-{{ $key }}" name="body" rows="4" maxlength="40000" placeholder="Add approved {{ strtolower($label) }} information here...">{{ $content->get($section.'.'.$key)?->pending_by !== null ? $content->get($section.'.'.$key)?->pending_body : ($content->get($section.'.'.$key)?->body ?: config('stsams_institution_editorial.sections.'.$section.'.'.$key, '')) }}</textarea><button class="btn btn-primary btn-small" type="submit">Save draft</button>
     </form>
     @if($content->get($section.'.'.$key)?->pending_by !== null)
     <p class="pending-text">Draft awaiting publisher approval.</p>

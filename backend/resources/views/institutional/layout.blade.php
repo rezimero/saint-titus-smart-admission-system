@@ -43,6 +43,9 @@
       <div class="shell" style="display:flex;justify-content:flex-end;align-items:center;gap:16px;padding:8px 0;font-size:.84rem;color:#28485d;flex-wrap:wrap">
         <span>Signed in: <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->getRoleNames()->map(fn ($r) => ucwords(str_replace('_', ' ', $r)))->join(', ') }})</span>
         <a href="{{ route('stsams.account.show') }}">My profile & security</a>
+        @can('website.manage')
+            <a href="{{ route('institution.admin.index') }}">Website Management</a>
+        @endcan
       </div>
     @endif
   @endauth

@@ -31,6 +31,9 @@
                 @endif
                 <a href="{{ route('stsams.dashboard') }}">Dashboard</a>
                 @if(auth()->user()->hasRole('superadmin'))<a href="{{ route('stsams.staff-management.index') }}">Staff access</a>@endif
+                                @can('website.manage')
+                    <a href="{{ route('institution.admin.index') }}">Website Management</a>
+                @endcan
                 @if(auth()->user()->can('settings.manage'))<a href="{{ route('stsams.admin.catalogue') }}">Setup</a>@endif
                 <form method="POST" action="{{ route('stsams.logout') }}" class="inline">@csrf<button class="nav-button" type="submit">Sign out</button></form>
             @else

@@ -25,8 +25,14 @@ class PublicWebsiteController extends Controller
 
     private function content(string $section): array
     {
-        return InstitutionContent::query()->where('section', $section)
+        // Approved editorial copy is the initial public content. A published CMS
+        // record overrides the default, while pending drafts stay private.
+        $defaults = config('stsams_institution_editorial.sections.'.$section, []);
+        $published = InstitutionContent::query()->where('section', $section)
             ->pluck('body', 'content_key')->all();
+        $published = array_filter($published, static fn ($body) => is_string($body) && trim($body) !== '');
+
+        return array_replace($defaults, $published);
     }
 
     private function publishedPosts(?string $category = null, int $limit = 8)
@@ -45,6 +51,7 @@ class PublicWebsiteController extends Controller
         return view('institutional.home', [
             'title' => 'Welcome',
             'content' => $this->content('home'),
+            'aboutContent' => $this->content('about'),
             'announcements' => $this->publishedPosts('announcement', 3),
             'admissionNotices' => $this->publishedPosts('admission', 3),
             'news' => $this->publishedPosts('news', 3),
