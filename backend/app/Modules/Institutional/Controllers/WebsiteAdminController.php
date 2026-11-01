@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Modules\Operations\Services\OperationsAudit;
+use Illuminate\Support\Facades\Gate;
 
 class WebsiteAdminController extends Controller
 {
@@ -22,7 +24,7 @@ class WebsiteAdminController extends Controller
         if (!$request->user()) {
             throw new AuthenticationException('Please sign in to continue.', ['web'], '/admissions/login');
         }
-        abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403);
+        abort_unless($request->user()->can('website.manage'), 403);
     }
 
     public function dashboard(Request $request): View
@@ -51,11 +53,27 @@ class WebsiteAdminController extends Controller
         ]);
         $topics = config('stsams_institution.topics', []);
         abort_unless(isset($topics[$data['section']][$data['content_key']]), 422);
-        InstitutionContent::updateOrCreate(
-            ['section' => $data['section'], 'content_key' => $data['content_key']],
-            ['body' => $data['body'] ?? null, 'updated_by' => $request->user()->id]
-        );
-        return back()->with('success','Institutional page content saved.');
+        $record = InstitutionContent::firstOrNew([
+            'section' => $data['section'], 'content_key' => $data['content_key'],
+        ]);
+        $record->forceFill(['pending_body' => $data['body'] ?? '', 'pending_by' => $request->user()->id])->save();
+        app(OperationsAudit::class)->record($request->user(), 'website_content', $record->id,
+            'website.content.drafted', ['section' => $data['section'], 'key' => $data['content_key']]);
+        return back()->with('success','Draft saved. An authorized publisher must publish it.');
+    }
+
+    public function publishContent(Request $request, InstitutionContent $content): RedirectResponse
+    {
+        $this->authorizeEditor($request);
+        Gate::authorize('website.publish');
+        abort_if($content->pending_by === null, 422, 'There is no content draft to publish.');
+        $content->forceFill([
+            'body' => $content->pending_body, 'updated_by' => $request->user()->id,
+            'pending_body' => null, 'pending_by' => null,
+        ])->save();
+        app(OperationsAudit::class)->record($request->user(), 'website_content', $content->id,
+            'website.content.published', ['section' => $content->section, 'key' => $content->content_key]);
+        return back()->with('success', 'Approved website content published.');
     }
 
     public function savePost(Request $request, ?InstitutionPost $post = null): RedirectResponse
@@ -70,6 +88,9 @@ class WebsiteAdminController extends Controller
             'event_starts_at' => ['nullable','date'],
             'event_location' => ['nullable','string','max:180'],
         ]);
+        $wantsPublish = (bool)($data['publish'] ?? false);
+        if ($wantsPublish) { Gate::authorize('website.publish'); }
+        if ($post?->exists && $post->is_published) { Gate::authorize('website.publish'); }
         $post ??= new InstitutionPost();
         if (!$post->exists) {
             $post->created_by = $request->user()->id;
@@ -81,13 +102,18 @@ class WebsiteAdminController extends Controller
             $post->published_at = now();
         }
         $post->save();
+        app(OperationsAudit::class)->record($request->user(), 'website_post', $post->id,
+            $wantsPublish ? 'website.post.published' : 'website.post.drafted', ['category' => $post->category]);
         return back()->with('success','Publication saved.');
     }
 
     public function deletePost(Request $request, InstitutionPost $post): RedirectResponse
     {
         $this->authorizeEditor($request);
+        if ($post->is_published) { Gate::authorize('website.publish'); }
         $post->delete();
+        app(OperationsAudit::class)->record($request->user(), 'website_post', $post->id,
+            'website.post.deleted', ['category' => $post->category]);
         return back()->with('success','Publication deleted.');
     }
 
@@ -101,9 +127,10 @@ class WebsiteAdminController extends Controller
             'photo' => ['required','image','mimes:jpg,jpeg,png,webp','max:4096'],
             'publish' => ['nullable','boolean'],
         ]);
+        if ($data['publish'] ?? false) { Gate::authorize('website.publish'); }
         $path = $request->file('photo')->store('stsams/institution', 'public');
         try {
-            InstitutionMedia::create([
+            $media = InstitutionMedia::create([
                 'kind' => $data['kind'],
                 'title' => $data['title'],
                 'alt_text' => $data['alt_text'],
@@ -115,15 +142,20 @@ class WebsiteAdminController extends Controller
             Storage::disk('public')->delete($path);
             throw $exception;
         }
+        app(OperationsAudit::class)->record($request->user(), 'website_media', $media->id,
+            ($data['publish'] ?? false) ? 'website.media.published' : 'website.media.drafted', ['kind' => $data['kind']]);
         return back()->with('success', 'Institutional photograph uploaded.');
     }
 
     public function deleteMedia(Request $request, InstitutionMedia $media): RedirectResponse
     {
         $this->authorizeEditor($request);
+        if ($media->is_published) { Gate::authorize('website.publish'); }
         $path = $media->file_path;
         $media->delete();
         Storage::disk('public')->delete($path);
+        app(OperationsAudit::class)->record($request->user(), 'website_media', $media->id,
+            'website.media.deleted', ['kind' => $media->kind]);
         return back()->with('success','Photograph removed.');
     }
 
@@ -131,7 +163,10 @@ class WebsiteAdminController extends Controller
     {
         $this->authorizeEditor($request);
         $request->validate(['status' => ['required',Rule::in(['new','reviewed','closed'])]]);
+        $before = $inquiry->status;
         $inquiry->update(['status'=>$request->input('status')]);
+        app(OperationsAudit::class)->record($request->user(), 'website_inquiry', $inquiry->id,
+            'website.inquiry.updated', ['from' => $before, 'to' => $inquiry->status]);
         return back()->with('success','Inquiry updated.');
     }
 }

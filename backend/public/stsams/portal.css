@@ -23,3 +23,5 @@
 @media(max-width:820px){.site-header .brand img{width:46px;height:54px}}
 @media(max-width:520px){.site-header .brand-name strong{font-size:.8rem}.site-header .brand-name small{font-size:.48rem}}
 /* END STSAMS-SHARED-INSTITUTIONAL-BRAND:v1 */
+/* STSAMS-STAFF-PROFILE-BRAND:v1 */
+.stsams-user-badge{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;color:#28485d;max-width:250px;flex-wrap:wrap}.stsams-user-badge strong{font-weight:700}.stsams-user-badge small{color:#647b8d}.site-header nav{flex-wrap:wrap}@media(max-width:700px){.stsams-user-badge{width:100%;max-width:none}}

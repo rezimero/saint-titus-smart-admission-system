@@ -1,0 +1,14 @@
+{
+  "backend/app/Models/StsamsAdmissionApplication.php": "A6352FD4AD924F3AFA14CE965CE693D90C9E4AFABD3096E7657D221971DCDE8D",
+  "backend/app/Modules/Admissions/Controllers/AdmissionReviewController.php": "BE44F0813332FDD62432ACDEE7CD907FF07958F6746E4CB0F7690BEF14551C9B",
+  "backend/app/Modules/Admissions/Services/AdmissionWorkflowService.php": "BE242F0B4B4AEB7FB4948E42C4E949395DF7FC3F739D006DCF7BE581468603CC",
+  "backend/app/Policies/StsamsAdmissionApplicationPolicy.php": "72AE20CBADA449DCE80C6D90E32797656039206BADAADEEA9797307BBD5B1AEC",
+  "backend/database/seeders/RolePermissionSeeder.php": "CE612C877AC092E227703FFF9418D68ED60769F8BD0391567C7255BF3288A7ED",
+  "backend/resources/views/stsams/staff/index.blade.php": "C459DB2CB5E2CC9220B24DFA8A6087180467D4CDDA772F473BD9C35D80DCE524",
+  "backend/resources/views/stsams/staff/show.blade.php": "17686BC7A3F4CBFF7306D3E8D60C786021A8352441A87A5236B95F048AD7ED78",
+  "backend/app/Modules/Administration/Services/StaffAccessService.php": "B80C33DC20277391BEAEBD6CFC3FFDDD03B94A2B403AE3985A90B35E7D636C84",
+  "backend/app/Modules/Institutional/Controllers/WebsiteAdminController.php": "322B01278CF7E7677F5D2540E0699B1A9934FA30F355EA7F48658B5D85B0AEEB",
+  "backend/resources/views/institutional/admin-dashboard.blade.php": "5DDBD152FC07CB8043A09F183C7396AE8BA968A1CBDDA388A2C87AC42650D3C5",
+  "backend/tests/Feature/Administration/AdmissionOfferPermissionTest.php": "37F61975A696BE46175A57C674F98A869A12410C03F4424A2F5AB0470C6B836F",
+  "backend/tests/Feature/Admissions/AdmissionPortalTest.php": "F98163A3CE5BDE58CE1644045D516F102BAAB93398C996593C9237B6CA098891"
+}

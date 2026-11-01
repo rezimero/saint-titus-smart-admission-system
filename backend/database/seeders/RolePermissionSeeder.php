@@ -11,46 +11,36 @@ use Spatie\Permission\PermissionRegistrar;
 
 final class RolePermissionSeeder extends Seeder
 {
-    /** Canonical role matrix. Only these role grants are synchronized. */
-    private const ROLE_PERMISSIONS = [
-        'superadmin' => '*',
-        'admin' => [
-            'users.view', 'users.create', 'users.update',
-            'applications.view', 'applications.create',
-            'applications.review', 'applications.approve', 'applications.reject',
-            'reports.view',
-        ],
-        'admission_officer' => [
-            'applications.view', 'applications.review', 'reports.view',
-        ],
-        'staff' => ['applications.view'],
-        'applicant' => ['applications.view', 'applications.create'],
-    ];
-
     private const PERMISSIONS = [
         'users.view', 'users.create', 'users.update', 'users.delete',
-        'applications.view', 'applications.create', 'applications.review',
-        'applications.approve', 'applications.reject',
-        'roles.manage', 'settings.manage', 'reports.view',
+        'staff.manage', 'website.manage', 'website.publish', 'settings.manage', 'reports.audit',
+        'applications.view', 'applications.view_all', 'applications.create', 'applications.review',
+        'applications.offer_admission', 'applications.reject', 'applications.assign',
+        'reports.view', 'roles.manage',
+    ];
+
+    // Crucial: ordinary admins and reviewers never inherit the offer permission.
+    private const ROLE_MATRIX = [
+        'admin' => ['applications.view_all', 'applications.review', 'reports.view'],
+        'admission_officer' => ['applications.view_all', 'applications.review'],
+        'staff' => [],
+        'website_editor' => ['website.manage'],
+        'applicant' => ['applications.view', 'applications.create'],
     ];
 
     public function run(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        foreach (self::PERMISSIONS as $permission) {
-            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        foreach (self::PERMISSIONS as $name) {
+            Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
-
-        foreach (self::ROLE_PERMISSIONS as $name => $permissions) {
-            $role = Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
-            $role->syncPermissions(
-                $permissions === '*'
-                    ? Permission::query()->where('guard_name', 'web')->get()
-                    : $permissions
-            );
+        foreach (self::ROLE_MATRIX as $name => $permissions) {
+            Role::firstOrCreate(['name' => $name, 'guard_name' => 'web'])
+                ->syncPermissions($permissions);
         }
-
+        // Gate::before grants the superadmin access to future abilities too.
+        Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web'])
+            ->syncPermissions(Permission::where('guard_name', 'web')->get());
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

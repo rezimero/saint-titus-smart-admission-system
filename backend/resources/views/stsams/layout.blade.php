@@ -10,6 +10,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('institutional/icons/favicon-32.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('institutional/icons/favicon-180.png') }}">
     <link rel="stylesheet" href="{{ asset('stsams/portal.css') }}">
+    <link rel="stylesheet" href="{{ asset('stsams/documents.css') }}">
 </head>
 <body>
 {{-- Shared institutional header identity; portal navigation remains admissions-specific. --}}
@@ -24,7 +25,12 @@
         <nav aria-label="Primary navigation">
             <a href="{{ route('stsams.home') }}">Home</a>
             @auth
+                <span class="stsams-user-badge" title="{{ auth()->user()->email }}">Signed in: <strong>{{ auth()->user()->name }}</strong> <small>({{ auth()->user()->getRoleNames()->map(fn ($r) => ucwords(str_replace('_', ' ', $r)))->join(', ') }})</small></span>
+                @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'admission_officer', 'staff', 'website_editor']))
+                  <a href="{{ route('stsams.account.show') }}">My profile</a>
+                @endif
                 <a href="{{ route('stsams.dashboard') }}">Dashboard</a>
+                @if(auth()->user()->hasRole('superadmin'))<a href="{{ route('stsams.staff-management.index') }}">Staff access</a>@endif
                 @if(auth()->user()->can('settings.manage'))<a href="{{ route('stsams.admin.catalogue') }}">Setup</a>@endif
                 <form method="POST" action="{{ route('stsams.logout') }}" class="inline">@csrf<button class="nav-button" type="submit">Sign out</button></form>
             @else

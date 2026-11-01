@@ -9,6 +9,7 @@ use App\Models\StsamsAdmissionApplication;
 use App\Models\StsamsAdmissionSession;
 use App\Models\StsamsProgramme;
 use App\Modules\Admissions\Services\AdmissionWorkflowService;
+use App\Modules\Admissions\Services\DocumentRequirements;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,12 +58,13 @@ final class ApplicantController extends Controller
         return redirect()->route('stsams.applicant.edit', $application);
     }
 
-    public function edit(StsamsAdmissionApplication $application): View
+    public function edit(StsamsAdmissionApplication $application, DocumentRequirements $requirements): View
     {
         Gate::authorize('view', $application);
         abort_unless($application->user_id === auth()->id(), 403);
         return view('stsams.applicant.edit', [
-            'application' => $application->load(['programme', 'admissionSession', 'documents', 'events.actor']),
+            'application' => $application->load(['programme', 'admissionSession', 'documents', 'events.actor', 'payments']),
+            'documentRequirements' => $requirements->forProgramme($application->programme),
         ]);
     }
 

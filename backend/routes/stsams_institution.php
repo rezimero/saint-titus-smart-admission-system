@@ -20,6 +20,7 @@ Route::post('/contact', [PublicWebsiteController::class, 'sendContact'])
 Route::prefix('institution-admin')->name('institution.admin.')->group(function () {
     Route::get('/', [WebsiteAdminController::class, 'dashboard'])->name('index');
     Route::post('/content', [WebsiteAdminController::class, 'saveContent'])->name('content');
+    Route::post('/content/{content}/publish', [WebsiteAdminController::class, 'publishContent'])->name('content.publish');
     Route::post('/posts', [WebsiteAdminController::class, 'savePost'])->name('posts.create');
     Route::put('/posts/{post}', [WebsiteAdminController::class, 'savePost'])->name('posts.update');
     Route::delete('/posts/{post}', [WebsiteAdminController::class, 'deletePost'])->name('posts.delete');

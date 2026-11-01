@@ -6,3 +6,7 @@ require __DIR__.'/stsams_portal.php';
 
 // Saint Titus institutional website; admissions routes remain unchanged.
 require __DIR__.'/stsams_institution.php';
+
+require __DIR__.'/stsams_staff_access.php';
+require __DIR__.'/stsams_staff_profile.php';
+require __DIR__.'/stsams_operations.php';

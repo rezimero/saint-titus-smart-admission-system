@@ -54,8 +54,17 @@ final class PortalAuthController extends Controller
     public function dashboard(Request $request): RedirectResponse
     {
         $user = $request->user();
-        if ($user->can('applications.review') || $user->can('applications.approve') || $user->can('applications.reject')) {
+        if ($user->hasRole('superadmin')) {
+            return redirect()->route('stsams.staff-management.index');
+        }
+        if ($user->canAny(['applications.view_all', 'applications.review', 'applications.offer_admission', 'applications.reject'])) {
             return redirect()->route('stsams.staff.index');
+        }
+        if ($user->can('settings.manage')) {
+            return redirect()->route('stsams.admin.catalogue');
+        }
+        if ($user->can('website.manage')) {
+            return redirect()->route('institution.admin.index');
         }
         if ($user->hasRole('applicant')) {
             return redirect()->route('stsams.applicant.index');

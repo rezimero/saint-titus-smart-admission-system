@@ -14,3 +14,7 @@ Route::prefix('v1')->group(function(){
     });
 
 });
+
+
+// STSAMS Paystack signed webhook; API routes are CSRF-exempt. Verified against Paystack API before payment approval.
+\Illuminate\Support\Facades\Route::post('/v1/payments/paystack/webhook', \App\Modules\Admissions\Controllers\PaystackWebhookController::class)->middleware('throttle:60,1')->name('stsams.payments.webhook');

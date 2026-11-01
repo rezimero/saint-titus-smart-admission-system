@@ -38,6 +38,14 @@
     </nav>
     <a class="btn btn-primary header-apply" href="{{ url('/admissions') }}">Apply now <span aria-hidden="true">↗</span></a>
   </div>
+  @auth
+    @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'admission_officer', 'staff', 'website_editor']))
+      <div class="shell" style="display:flex;justify-content:flex-end;align-items:center;gap:16px;padding:8px 0;font-size:.84rem;color:#28485d;flex-wrap:wrap">
+        <span>Signed in: <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->getRoleNames()->map(fn ($r) => ucwords(str_replace('_', ' ', $r)))->join(', ') }})</span>
+        <a href="{{ route('stsams.account.show') }}">My profile & security</a>
+      </div>
+    @endif
+  @endauth
 </header>
 <main id="main-content">
   @if(session('success'))<div class="shell flash" role="status">{{ session('success') }}</div>@endif
